@@ -1,24 +1,29 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { User } = require('../models');
+const { UserLogin} = require('../../model/UserLogin');
+const {UserSignup} = require('../../model/UserSignup');
+const { encrypt, decrypt } = require('../../encryption');
 
 const authenticateUser = async (req, res, next) => {
-  const { email, password, action } = req.body;
+    const { email, password, action } = req.body;
 
-  try {
+    try {
         if (action === 'signup') {
-            const existingUser = await User.findOne({ email });
+            const existingUser = await UserSignup.findOne({ email });
+
             if (existingUser) {
                 return res.status(400).json({ error: 'Email already exists' });
             }
+
             const hashedPassword = await bcrypt.hash(password, 10);
-            const newUser = new User({ FirstName, LastName, email, password: hashedPassword });
+            const newUser = new UserSignup({ email, password: hashedPassword });
             await newUser.save();
 
-            req.user = { email: newUser.email, userId: newUser._id, action: 'signup' };
-        } 
-        else if (action === 'login') {
-            const user = await User.findOne({ email });
+            const encryptedEmail = encrypt(email);
+
+            req.user = { email: encryptedEmail, userId: newUser._id, action: 'signup' };
+        } else if (action === 'login') {
+            const user = await UserLogin.findOne({ email });
 
             if (!user) {
                 return res.status(401).json({ error: 'Invalid email or password' });
@@ -30,7 +35,12 @@ const authenticateUser = async (req, res, next) => {
                 return res.status(401).json({ error: 'Invalid email or password' });
             }
 
-            req.user = { email: user.email, userId: user._id, action: 'login' };
+            const decryptedEmail = decrypt(user.email);
+
+            req.user = { email: decryptedEmail, userId: user._id, action: 'login' };
+        } else if (action === 'logout') {
+            req.logout();
+            return res.json({ message: 'Logged out successfully' });
         } else {
             return res.status(400).json({ error: 'Invalid action' });
         }

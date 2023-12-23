@@ -2,11 +2,11 @@ const Blog = require("../../model/Blog");
 
 const CreateBlog = async (req, res) => {
   try {
-        const blog = new Blog({
-        Title: req.body.Title, // Corrected property name
-        Content: req.body.Content, // Corrected property name
-        Author: req.session.user._id,
-        });
+    const blog = new Blog({
+        title: req.body.Title,
+        content: req.body.Content,
+        author: req.session.user._id,
+    });
 
         await blog.save();
         res.status(201).send(blog); // Changed 'service' to 'blog' for consistency

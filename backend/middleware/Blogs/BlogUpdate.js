@@ -1,4 +1,5 @@
 const Blog = require('../../model/Blog');
+const { ObjectId } = require('mongoose');
 
 const UpdateBlog = async (req, res) => {
   try {
@@ -8,12 +9,12 @@ const UpdateBlog = async (req, res) => {
         return res.status(400).send('Invalid Id');
         }
         const blogData = { title: ' ', content: ' ' };
-
         ['title', 'content'].forEach((key) => {
-        if (req.body[key] !== undefined) {
-            blogData[key] = req.body[key];
-        }
+            if (req.body[key] !== undefined) {
+                blogData[key] = req.body[key];
+            }
         });
+
 
         if (!blogData.title.trim() || !blogData.content.trim()) {
         return res.status(400).send('Missing Data');
